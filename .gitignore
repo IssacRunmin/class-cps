@@ -1,0 +1,19 @@
+# MacOS temporary files
+**/.DS_Store
+
+# Dataset
+data/
+model/
+# Microsoft temp files
+## Word temporary
+~$*.doc*
+# Excel temporary
+~$*.xls*
+# Excel Backup File
+*.xlk
+# PowerPoint temporary
+~$*.ppt*
+
+# python
+**/__pycache__
+
