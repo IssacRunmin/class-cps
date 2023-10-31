@@ -34,7 +34,7 @@ class YOLOv5:
     def __init__(self, model_dir, device, conf_thres: float = 0.25, varient: str = "m"):
         if not os.path.exists(model_dir):
             os.makedirs(model_dir)
-        assert varient in ["n", "s", "m", "l", "x"]
+        # assert varient in ["n", "s", "m", "l", "x"]
         self.model = attempt_load(f"{model_dir}/yolov5{varient}.pt",
                                   device=device,
                                   fuse=True).eval()

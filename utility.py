@@ -7,26 +7,6 @@ import glob
 
 from PIL import Image
 
-def extract_small_images(image_path, label_path, size_threshold=(32, 32)):
-    # Open the image file
-    with Image.open(image_path) as img:
-        # Open the label file
-        with open(label_path, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                # Parse bounding box coordinates
-                x_center, y_center, width, height = map(float, line.split()[1:])
-                x1 = int((x_center - width / 2) * img.width)
-                y1 = int((y_center - height / 2) * img.height)
-                x2 = int((x_center + width / 2) * img.width)
-                y2 = int((y_center + height / 2) * img.height)
-                
-                # Check if bounding box is smaller than threshold
-                if (x2 - x1) < size_threshold[0] and (y2 - y1) < size_threshold[1]:
-                    return True
-    return False
-
-
 def list_file(file_path: str, file_format: tuple = None) -> List[str]:
     EXTENSION_RE = re.compile(r'\.([a-zA-Z\d]*?)$')
     """

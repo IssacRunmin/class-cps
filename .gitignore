@@ -2,8 +2,8 @@
 **/.DS_Store
 
 # Dataset
-data/
-model/
+datasets
+
 # Microsoft temp files
 ## Word temporary
 ~$*.doc*
