@@ -31,7 +31,7 @@ DRONE_ROI = 0
 
 # Argument parser and default arguments
 Default_args = {
-    "task": "test",
+    "task": "split",
     "device" : DEVICE_STR,  # "cuda:0"
     "seed": RANDOM_SEED, 
     "dir": DATA_DIR,
@@ -53,7 +53,7 @@ pil2tensor = torchvision.transforms.ToTensor()
 def read_image(file_path: str):
     return pil2tensor(Image.open(file_path).convert("RGB")).unsqueeze(0)
 
-def is_small_images(image_path, label_path, size_threshold=(32, 32)):
+def is_small_images(image_path:str, label_path:str, size_threshold=(32, 32)):
     # Open the image file
     with Image.open(image_path) as img:
         # Open the label file
@@ -62,13 +62,12 @@ def is_small_images(image_path, label_path, size_threshold=(32, 32)):
             for line in lines:
                 # Parse bounding box coordinates
                 x_center, y_center, width, height = map(float, line.split()[1:])
-                x1 = int((x_center - width / 2) * img.width)
-                y1 = int((y_center - height / 2) * img.height)
-                x2 = int((x_center + width / 2) * img.width)
-                y2 = int((y_center + height / 2) * img.height)
-                
+                # if no UAV in the image
+                if width == 0 and height == 0:  
+                    return None
                 # Check if bounding box is smaller than threshold
-                if (x2 - x1) < size_threshold[0] and (y2 - y1) < size_threshold[1]:
+                if int(width * img.width) <= size_threshold[0] \
+                    and int(height * img.height) <= size_threshold[1]:
                     return True
     return False
 
@@ -112,7 +111,7 @@ def test(img_paths:list, out_dir:str):
             for *bbox, conf, cat in pred:
                 if cat == DRONE_ROI:
                     b = [int(x) for x in bbox]
-                    f.write(f'{cat} {b[0]} {b[1]} {b[2]} {b[3]}')
+                    f.write(f'{int(cat)} {b[0]} {b[1]} {b[2]} {b[3]}')
         # if is_small:
         #     small_targets.append((img, pred))
         # else:
@@ -174,13 +173,18 @@ def split_dataset(dataset_path: str) -> None:
     data_path = os.path.dirname(dataset_path)
     small_target_imgs = []
     normal_target_imgs = []
+    skip_count = 0
     for img_file in img_paths:
         label_path = img_file[:-3] + "txt"
         res = is_small_images(img_file, label_path)
+        if res is None:  # no UAV in image
+            skip_count += 1
+            continue
         if res:
             small_target_imgs.append(img_file)
         else:
             normal_target_imgs.append(img_file)
+    print(f"Non-target images: {skip_count}")
     test_paths = None
     # small target
     val_paths, test_paths = split_paths(small_target_imgs, 
@@ -188,14 +192,14 @@ def split_dataset(dataset_path: str) -> None:
                                           random_seed=RANDOM_SEED)
     train_paths, val_paths = split_paths(val_paths, val_ratio=0.9, 
                                           random_seed=RANDOM_SEED)
-    # imgs_symlink(dataset_path, "test_small", test_paths)
+    imgs_symlink(dataset_path, "test_small", test_paths)
     # normal target
     val_paths_t, test_paths_t = split_paths(normal_target_imgs, 
                                               val_ratio=TRAIN_SPLIT_SIZE, 
                                               random_seed=RANDOM_SEED)
     train_paths_t, val_paths_t = split_paths(val_paths_t, val_ratio=0.9, 
                                              random_seed=RANDOM_SEED)
-    # imgs_symlink(dataset_path, "test_normal", test_paths_t)
+    imgs_symlink(dataset_path, "test_normal", test_paths_t)
     test_paths.extend(test_paths_t)
     val_paths.extend(val_paths_t)
     train_paths.extend(train_paths_t)
