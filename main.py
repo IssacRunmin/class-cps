@@ -173,18 +173,21 @@ def split_dataset(dataset_path: str) -> None:
     data_path = os.path.dirname(dataset_path)
     small_target_imgs = []
     normal_target_imgs = []
+    none_target_imgs = []
     skip_count = 0
     for img_file in img_paths:
         label_path = img_file[:-3] + "txt"
         res = is_small_images(img_file, label_path)
         if res is None:  # no UAV in image
             skip_count += 1
+            none_target_imgs.append(img_file)
             continue
         if res:
             small_target_imgs.append(img_file)
         else:
             normal_target_imgs.append(img_file)
     print(f"Non-target images: {skip_count}")
+    imgs_symlink(dataset_path, "non_targets", none_target_imgs)
     test_paths = None
     # small target
     val_paths, test_paths = split_paths(small_target_imgs, 
@@ -223,6 +226,10 @@ def test_dataset():
         shutil.rmtree(dir_t)
     os.mkdir(dir_t)
     test_paths = list_file(os.path.join(DATA_DIR+SPLIT_DIR_T, 'test'), 'jpg')
+    test(test_paths, dir_t)
+    test_paths = list_file(os.path.join(DATA_DIR+SPLIT_DIR_T, 'test_small'), 'jpg')
+    test(test_paths, dir_t)
+    test_paths = list_file(os.path.join(DATA_DIR+SPLIT_DIR_T, 'test_normal'), 'jpg')
     test(test_paths, dir_t)
 
 

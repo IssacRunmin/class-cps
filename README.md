@@ -51,6 +51,7 @@ python main.py --task split
 编写数据集描述，包括train，val，test的文件夹
 
 ```shell
+git clone https://github.com/ultralytics/yolov5.git
 ln -sv ../../drone.yaml yolov5/data/drone.yaml
 ```
 #### 2.2 train yolo v5 model
@@ -58,7 +59,6 @@ ln -sv ../../drone.yaml yolov5/data/drone.yaml
 训练yolov5，项目地址：https://github.com/ultralytics/yolov5.git
 
 ```shell
-#git clone https://github.com/ultralytics/yolov5.git
 cd yolov5
 # --img: img resize to 640x640, as default
 # --batch: batch size 16, as default
